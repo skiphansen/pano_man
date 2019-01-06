@@ -98,6 +98,9 @@ Then we can make a Y cable to combine the joystick and VGA cables.  Note: The pi
 |Hsync|13|13|-|
 |Vsync|14|14|-|
 |VGA SCL/up|15|-|1|
+|B input paddle|-|-|5|
+|Trigger input|-|-|6|
+|A input paddle|-|-|9|
 
 
 ![](./assets/JoystickAdapterCable_small.png)
@@ -106,8 +109,8 @@ Then we can make a Y cable to combine the joystick and VGA cables.  Note: The pi
 ## Updating ROMs
 To update the bitstream with new ROMs:
 
-1. Place the ROM images in .../pano_man/src/main/roms.
-2. Run "./build_roms_pacman.sh" (or build_roms.bat on Windoze) from the .../pano_man/src/main/pacman subdirectory.
+1. Place the ROM images in ~/pano_man/src/main/roms.
+2. Run "./build_roms_pacman.sh" (or build_roms.bat on Windoze) from the ~/pano_man/src/main/pacman subdirectory.
 4. Start ISE.
 5. From the ISE IDE select "Pano" from the Design/Hierarchy window.
 6. Right click on "Generate Programming File" in the Design/Processes windows and then select "Rerun All".
@@ -153,14 +156,14 @@ make ise
 
 * Create the bitstream
 
-    * File -> Open Project -> .../pano_man/xilinx/xilinx.xise
+    * File -> Open Project -> ~/pano_man/xilinx/panoman.xise
     * Double click on 'Generate Programming File'
 
 
 * Fire up Xilinx Impact
 
 ```
-cd ~/projects/rt/xilinx
+cd ~/pano_man/xilinx
 make impact
 ```
 
