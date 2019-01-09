@@ -11,11 +11,11 @@ This project is a Frankenstein's monster of code from many different places writ
 ## Heritage
  This project is essentially a small layer of "glue" code that ties together the work of others including:
 
-* Tom Verbeures ray tracer [project](https://github.com/tomverbeure/rt) which was used as the basic infrastructure to quickly get code up and running on the Pano.
-* [Mike Js](http://www.fpgaarcade.com/author/mikej/) simulation model of the Pacman hardware in VHDL for the Spartan 3E.
+* Tom Verbeure's ray tracer [project](https://github.com/tomverbeure/rt) which was used as the basic infrastructure to quickly get code up and running on the Pano.
+* [Mike J's](http://www.fpgaarcade.com/author/mikej/) simulation model of the Pacman hardware in VHDL for the Spartan 3E.
 * The [Papilio-Arcade](https://github.com/GadgetFactory/Papilio-Arcade.git) project modifications of MikeJ's project for the Papilio platform.  
-* Daniel Wallners Z80 CPU [core](https://opencores.org/projects/tv80).
-* Tom Verbeures amazing reverse engineering efforts and Pano logic [bring up](https://github.com/tomverbeure/panologic) code.
+* Daniel Wallner's Z80 CPU [core](https://opencores.org/projects/tv80).
+* Tom Verbeure's amazing reverse engineering efforts and Pano logic [bring up](https://github.com/tomverbeure/panologic) code.
 * The [SpinalHDL](https://github.com/SpinalHDL) project.
 
 ## Why a RISC-V ??
@@ -68,7 +68,7 @@ One surprise was that unlike the green and blue LED ports the red LED port can't
 
 It turns out that there is a "DIP" switch setting that configured the Pacman machine for free plays.  By selecting this mode we eliminate the need for the coins slot inputs.
 
-The 2 player start button isn't essential so we can skip it and thus get down to5 inputs for the Joystick and start button.  The start is easy, we'll just use the existing "Pano" button for that.
+The 2 player start button isn't essential so we can skip it and thus get down to 5 inputs for the Joystick and start button.  The start button is easy, we'll just use the existing "Pano" button for it.
 
 This leaves us with 4 inputs we need to connect to our joystick.  For the impatient person who isn't concerned about esthetics or physical robustness flying wires are a quick and easy way to hook up the joystick.
 

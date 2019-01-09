@@ -42,4 +42,9 @@ bin/
 cpu0.yaml
 simWorkspace/
 tmp/
+skip/
+misc/romgen/romgen
+
+# Roms
+src/main/roms
 
