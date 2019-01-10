@@ -52,30 +52,32 @@ In order to run the Pacman you will need to create ROM image files from an actua
 ## Joystick Interface
 Video and sound weren't much of a challenge since Tom Verbeur had already done all of the ground work there.  
 
-The joystick, coin detector, and start buttons on the other hand presented a bit of a challenge. Normally a Pacman game needs 8 GPIO inputs:
+The joystick, coin detectors, and start buttons on the other hand presented a bit of a challenge. Normally a Pacman game needs 8 or 12 GPIO inputs:
 
 1. Two inputs for the two coin slots.
 1. One input for the 1 player game start button.
 1. One input for the 2 player game start button.
-1. Four inputs for the joystick.
+1. Eight inputs for 2 joysticks for the cocktail table version or four inputs for one joystick on the upright version.
 
 The obvious way to connect a Joystick to the Pano is to use one of the USB ports, but that's a problem because there's no code for the USB port yet and it looks like a major undertaking.   
 
 Another solution would be to use an I2C port expander, but this would require something to be built along with code to poll it and it would not be easy to house it in the tiny Pano case.
 
-The Pano does have some signals that are relatively easy to access that could be considered GPIOs.  Three are used to drive the 3 LEDs, one is used to read the"Pano" button, and 2 are connected to the VGA monitors Display Data Channel (DDC) port. This get us close. 
+The Pano does have some signals that are relatively easy to access that could be considered GPIOs.  Three are used to drive the 3 LEDs, one is used to read the"Pano" button, and 2 are connected to the VGA monitors Display Data Channel (DDC) port.
 
-One surprise was that unlike the green and blue LED ports the red LED port can't be used as an input without hardware modifications.  Apparently the red LED is not driven directly by a Xilinx pin.
+One surprise was that unlike the green and blue LEDs the red LED is not driven directly by a Xilinx pin so it's can't be used as an input without hardware modifications.  This leaves us with 5 GPIOs and one output port that are easily accessible.
+
+We will eliminate the need for 5 inputs by supporting only the single player mode.
 
 It turns out that there is a "DIP" switch setting that configured the Pacman machine for free plays.  By selecting this mode we eliminate the need for the coins slot inputs.
 
-The 2 player start button isn't essential so we can skip it and thus get down to 5 inputs for the Joystick and start button.  The start button is easy, we'll just use the existing "Pano" button for it.
+This leaves us with 5 inputs for a Joystick and a start button.  The start button is easy, we'll just use the existing "Pano" button for it.
 
-This leaves us with 4 inputs we need to connect to our joystick.  For the impatient person who isn't concerned about esthetics or physical robustness flying wires are a quick and easy way to hook up the joystick.
+For the impatient person who isn't concerned about esthetics or physical robustness flying wires are a quick and easy way to hook up the joystick.
 
 I choose to use a connector to make things more robust, neat and tidy.  Since the case is so small adding a connector isn't really an option, however two of the signals are already on the VGA connector and the VGA connector has just enough spare pins for the other two! 
 
- Adding two jumper wires from the VGA connector from the LEDS is pretty easy to do with any soldering skills at all.  Here's the result:
+Even with moderate soldering skills adding two jumper wires from the VGA connector from the LEDS is pretty easy.  Here's the result:
  
 ![](./assets/jumpers_small.png) 
 
