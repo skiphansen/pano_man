@@ -1,9 +1,14 @@
+#define SCL_OFFSET         0
+#define SDA_OFFSET         0x4
 
-#define LED_CONFIG_ADDR     0x00000000
-#define CODEC_SCL_ADDR      0x00000010
-#define CODEC_SDA_ADDR      0x00000014
-#define VGA_SCL_ADDR        0x00000018
-#define VGA_SDA_ADDR        0x0000001c
-#define EOF_ADDR            0x00000040
-#define TXT_BUF_ADDR        0x00008000
+#define LED_CONFIG_ADR     0x00000000
+#define CODEC_I2C_ADR      0x00000010
+#define VGA_I2C_ADR        0x00000018
+#define GPIO_ADR           0x00000020
+
+// Bits in GPIO register:
+#define I2C_INIT_COMPLETE  0x10000  // bit 17 -> Initialization complete
+#define I2C_EXPANDER       0x20000  // bit 18 -> Port expander present
+
+#define TXT_BUF_ADR        0x00008000
 

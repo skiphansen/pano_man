@@ -18,6 +18,9 @@ class PanoCore extends Component {
 
         val codec_scl = master(ReadableOpenDrain(Bool))
         val codec_sda = master(ReadableOpenDrain(Bool))
+
+        val vo_scl = master(ReadableOpenDrain(Bool))
+        val vo_sda = master(ReadableOpenDrain(Bool))
     }
 
     val leds = new Area {
@@ -39,9 +42,10 @@ class PanoCore extends Component {
     val u_mr1_top = new MR1Top(mr1Config)
     u_mr1_top.io.led1       <> io.led_blue
     u_mr1_top.io.switch_    <> True
-    u_mr1_top.io.eof        <> eof_final
     u_mr1_top.io.codec_scl  <> io.codec_scl
     u_mr1_top.io.codec_sda  <> io.codec_sda
+    u_mr1_top.io.vo_scl    <> io.vo_scl
+    u_mr1_top.io.vo_sda    <> io.vo_sda
     u_mr1_top.io.led1       <> io.led1
 
 }

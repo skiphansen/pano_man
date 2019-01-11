@@ -3,8 +3,6 @@
 
 #include "i2c.h"
 
-i2c_ctx_t audio_i2c_ctx;
-
 short int audio_registers[][2] = {
     // For now, use default volume settings for LOUT1/ROUT1
 //    { WM8750_LOUT1_VOL_ADDR,            -1 },
@@ -139,18 +137,14 @@ short int audio_registers[][2] = {
 
 void audio_init()
 {
-    audio_i2c_ctx.base_addr = 0;
-    audio_i2c_ctx.scl_pin_nr = 2;
-    audio_i2c_ctx.sda_pin_nr = 3;
-
-    i2c_init(&audio_i2c_ctx);
+    i2c_init(CODEC_I2C_ADR);
 
     int idx = 0;
     while(audio_registers[idx][0] != -1){
         int addr  = audio_registers[idx][0];
         int value = audio_registers[idx][1];
 
-        i2c_write_reg(&audio_i2c_ctx, 0x34, (addr<<1) | (value>>8), (value & 0xff));
+        i2c_write_reg(CODEC_I2C_ADR, WM8750L_I2C_ADR, (addr<<1) | (value>>8), (value & 0xff));
         ++idx;
     }
 }

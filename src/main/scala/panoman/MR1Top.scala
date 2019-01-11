@@ -17,15 +17,11 @@ class MR1Top(config: MR1Config ) extends Component {
 
         val switch_ = in(Bool)
 
-
-        val txt_buf_wr      = out(Bool)
-        val txt_buf_wr_addr = out(UInt(11 bits))
-        val txt_buf_wr_data = out(Bits(8 bits))
-
-        val eof         = in(Bool)
-
         val codec_scl = master(ReadableOpenDrain(Bool))
         val codec_sda = master(ReadableOpenDrain(Bool))
+        val vo_scl = master(ReadableOpenDrain(Bool))
+        val vo_sda = master(ReadableOpenDrain(Bool))
+        val gpio_out = out Bits(18 bits)
     }
 
     val mr1 = new MR1(config)
@@ -44,7 +40,7 @@ class MR1Top(config: MR1Config ) extends Component {
 
     mr1.io.data_req.ready := True
     mr1.io.data_rsp.valid := RegNext(mr1.io.data_req.valid && !mr1.io.data_req.wr) init(False)
-    mr1.io.data_rsp.data  := cpu_ram_rd_data
+    mr1.io.data_rsp.data  := RegNext(mr1.io.data_req.addr(19)) ? reg_rd_data | cpu_ram_rd_data
 
     val ramSize = 8192
 
@@ -88,10 +84,11 @@ class MR1Top(config: MR1Config ) extends Component {
 
     val update_leds = mr1.io.data_req.valid && mr1.io.data_req.wr && (mr1.io.data_req.addr === U"32'h00080000")
 
-    io.led1 := RegNextWhen(mr1.io.data_req.data(0), update_leds) init(False)
+    // io.led1 := RegNextWhen(mr1.io.data_req.data(0), update_leds) init(False)
     io.led2 := RegNextWhen(mr1.io.data_req.data(1), update_leds) init(False)
     io.led3 := RegNextWhen(mr1.io.data_req.data(2), update_leds) init(False)
 
+ // I2C interfaces
     val codec_scl_addr = (mr1.io.data_req.addr === U"32'h00080010")
     val codec_sda_addr = (mr1.io.data_req.addr === U"32'h00080014")
 
@@ -101,32 +98,27 @@ class MR1Top(config: MR1Config ) extends Component {
     io.codec_sda.write := RegNextWhen(mr1.io.data_req.data(0), write_codec_sda) init(False)
     io.codec_scl.write := RegNextWhen(mr1.io.data_req.data(0), write_codec_scl) init(False)
 
-    //============================================================
-    // EOF
-    //============================================================
+    val vo_scl_addr = (mr1.io.data_req.addr === U"32'h00080018")
+    val vo_sda_addr = (mr1.io.data_req.addr === U"32'h0008001c")
 
-    val eof_addr  = (mr1.io.data_req.addr === U"32'h00080040")
-    val update_eof_sticky = mr1.io.data_req.valid && mr1.io.data_req.wr && eof_addr
 
-    val eof_sticky = Reg(Bool) init(False)
-    eof_sticky := io.eof ? True | (eof_sticky && !update_eof_sticky)
+    val write_vo_sda = mr1.io.data_req.valid && mr1.io.data_req.wr && vo_sda_addr
+    val write_vo_scl = mr1.io.data_req.valid && mr1.io.data_req.wr && vo_scl_addr
 
-    //============================================================
-    // Txt Buf RAM
-    //============================================================
+    io.vo_sda.write := RegNextWhen(mr1.io.data_req.data(0), write_vo_sda) init(False)
+    io.vo_scl.write := RegNextWhen(mr1.io.data_req.data(0), write_vo_scl) init(False)
 
-    val txt_buf_addr = (mr1.io.data_req.addr(15, 17 bits) === U"32'h00088000"(15, 17 bits))
+    val gpio_addr = (mr1.io.data_req.addr === U"32'h00080040")
+    val write_gpio = mr1.io.data_req.valid && mr1.io.data_req.wr && gpio_addr
 
-    val update_txt_buf = mr1.io.data_req.valid && mr1.io.data_req.wr && txt_buf_addr
+    io.gpio_out := RegNextWhen(mr1.io.data_req.data(0, 18 bits), write_gpio) init(0)
 
-    io.txt_buf_wr       <> update_txt_buf
-    io.txt_buf_wr_addr  <> mr1.io.data_req.addr(2, 11 bits)
-    io.txt_buf_wr_data  <> mr1.io.data_req.data(0, 8 bits)
-
-    reg_rd_data :=   (RegNext(eof_addr)      ? (B(0, 31 bits) ## eof_sticky) |
-                     (RegNext(codec_sda_addr) ? (B(0, 31 bits) ## io.codec_sda.read) |
+    reg_rd_data :=   (RegNext(codec_sda_addr) ? (B(0, 31 bits) ## io.codec_sda.read) |
                      (RegNext(codec_scl_addr) ? (B(0, 31 bits) ## io.codec_scl.read) |
-                                               B(0, 32 bits))))
+                     (RegNext(vo_sda_addr)    ? (B(0, 31 bits) ## io.vo_sda.read) |
+                     (RegNext(vo_scl_addr)    ? (B(0, 31 bits) ## io.vo_scl.read) |
+                     (RegNext(gpio_addr)      ? (B(0, 14 bits) ## io.gpio_out) |
+                      B(0, 32 bits))))))
 
 }
 

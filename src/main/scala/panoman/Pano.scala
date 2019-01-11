@@ -22,8 +22,8 @@ case class Pano() extends Component {
         val led_blue            = in(Bool)
         val led_red             = out(Bool)
 
-        val vo_scl = in(Bool)
-        val vo_sda = in(Bool)
+        val vo_scl = master(ReadableOpenDrain(Bool))
+        val vo_sda = master(ReadableOpenDrain(Bool))
 
         val audio_scl = master(ReadableOpenDrain(Bool))
         val audio_sda = master(ReadableOpenDrain(Bool))
@@ -85,8 +85,10 @@ case class Pano() extends Component {
         val u_pano_core = new PanoCore()
         io.audio_scl <> u_pano_core.io.codec_scl
         io.audio_sda <> u_pano_core.io.codec_sda
-        io.led_red := u_pano_core.io.led1
-    }
+        io.vo_scl <> u_pano_core.io.vo_scl
+        io.vo_sda <> u_pano_core.io.vo_sda
+        io.led_red := io.vo_sda.read
+}
 
     var audio = new audio()
     audio.io.clk12 <> core.clk12
@@ -134,8 +136,8 @@ case class Pano() extends Component {
 //  1   DOWN Joystick
 //  0   UP Joystick
 
-    pacman.io.I_JOYSTICK_A := (0 -> io.vo_scl, 
-                               1 -> io.vo_sda, 
+    pacman.io.I_JOYSTICK_A := (0 -> io.vo_scl.read, 
+                               1 -> io.vo_sda.read, 
                                2 -> io.led_blue,
                                3 -> io.led_green,
                                4 -> false)
