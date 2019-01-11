@@ -61,7 +61,7 @@ The joystick, coin detectors, and start buttons on the other hand presented a bi
 
 The obvious way to connect a Joystick to the Pano is to use one of the USB ports, but that's a problem because there's no code for the USB port yet and it looks like a major undertaking.   
 
-Another solution would be to use an I2C port expander, but this would require something to be built along with code to poll it and it would not be easy to house it in the tiny Pano case.
+Another solution would be to use an I2C port expander, but this would require something to be built along with code to poll it and it would not be easy to house it in the tiny Pano case. *(See Notes at the bottom of this page)*
 
 The Pano does have some signals that are relatively easy to access that could be considered GPIOs.  Three are used to drive the 3 LEDs, one is used to read the"Pano" button, and 2 are connected to the VGA monitors Display Data Channel (DDC) port.
 
@@ -183,3 +183,8 @@ make impact
 * Once basic USB support is available add support for USB Joysticks
 
 * Port other games that ran on the same hardware such as Invaders and Galaxian
+
+## Notes
+1. Tom Verbeure is  working on a [PCB](https://github.com/tomverbeure/vga_i2c.git) for an I2C port expander for the Pano. I'm working on adding support for Tom's board in the i2c_port_expander branch of this repository.
+2. The Pacman ROM for MAME images are typically found in a zip file named *puckmanb.zip*.
+3. This project has been featured on [Hackaday](https://hackaday.com/2019/01/11/pac-man-fever-comes-to-the-pano-logic-fpga) ! 
