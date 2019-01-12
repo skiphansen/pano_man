@@ -64,12 +64,10 @@ entity PACMAN is
     --
     O_AUDIO               : out   std_logic_vector(7 downto 0);
     --
-     I_JOYSTICK_A            : in    std_logic_vector(4 downto 0);
-     I_JOYSTICK_B            : in    std_logic_vector(4 downto 0);
---     JOYSTICK_A_GND          : out   std_logic;
---     JOYSTICK_B_GND          : out   std_logic;
+    I_JOYSTICK_A          : in    std_logic_vector(7 downto 0);
+    I_JOYSTICK_B          : in    std_logic_vector(7 downto 0);
      
-    I_SW                  : in    std_logic_vector(3 downto 0); -- active high
+    I_SW                  : in    std_logic_vector(7 downto 0); -- active high
     O_LED                 : out   std_logic_vector(2 downto 0);
     --
     I_RESET               : in    std_logic;
@@ -158,13 +156,13 @@ architecture RTL of PACMAN is
     signal freeze           : std_logic;
 
     -- ip registers
-    signal button_in        : std_logic_vector(13 downto 0);
-    signal button_debounced : std_logic_vector(13 downto 0);
+    signal button_in        : std_logic_vector(23 downto 0);
+    signal button_debounced : std_logic_vector(23 downto 0);
     signal in0_reg          : std_logic_vector(7 downto 0);
     signal in1_reg          : std_logic_vector(7 downto 0);
     signal dipsw_reg        : std_logic_vector(7 downto 0);
-    signal joystick_reg     : std_logic_vector(4 downto 0);
-     signal joystick_reg2     : std_logic_vector(4 downto 0);
+    signal joystick_reg     : std_logic_vector(7 downto 0);
+    signal joystick_reg2     : std_logic_vector(7 downto 0);
 
     -- scan doubler signals
     signal video_r          : std_logic_vector(2 downto 0);
@@ -189,24 +187,6 @@ begin
   
   joystick_reg <= I_JOYSTICK_A;
   joystick_reg2 <=  I_JOYSTICK_B;
---  JOYSTICK_A_GND <= '0';
---  JOYSTICK_B_GND <= '0';
-  
-  --
-  -- clocks
-  --
---  u_clocks : entity work.PACMAN_CLOCKS
---    port map (
---      I_CLK_REF  => OSC_IN,
---      I_RESET_L  => I_RESET_L,
---      --
---      O_CLK_REF  => clk_ref,
---      --
---      O_ENA_12   => ena_12,
---      O_ENA_6    => ena_6,
---      O_CLK      => clk,
---      O_RESET    => reset
---      );
   --
   -- video timing
   --
@@ -740,30 +720,14 @@ begin
       ENA_6         => ena_6,
       CLK           => clk
       );
-  --
-  -- Audio DAC
-  --
---  u_dac : entity work.dac
---    generic map(
---      msbi_g => 7
---    )
---    port  map(
---      clk_i   => clk_ref,
---      res_n_i => I_RESET_L,
---      dac_i   => audio,
---      dac_o   => audio_pwm
---    );
---
---  O_AUDIO_L <= audio_pwm;
---  O_AUDIO_R <= audio_pwm;
 
-  button_in(8 downto 5) <= I_SW(3 downto 0);
-  button_in(4 downto 0) <= joystick_reg(4 downto 0);
-  button_in(13 downto 9) <= joystick_reg2(4 downto 0);
+  button_in(7 downto 0) <= I_SW(7 downto 0);
+  button_in(15 downto 8) <= joystick_reg(7 downto 0);
+  button_in(23 downto 16) <= joystick_reg2(7 downto 0);
   
   u_debounce : entity work.PACMAN_DEBOUNCE
   generic map (
-    G_WIDTH => 14
+    G_WIDTH => 24
     )
   port map (
     I_BUTTON => button_in,
@@ -771,52 +735,14 @@ begin
     CLK      => clk
     );
 
---button_debounced  Arcade MegaWing Location
---          8                       RIGHT PushButton
---          7                       DOWN PushButton
---          6                       UP PushButton
---          5                       LEFT PushButton
---          4                       Fire Joystick
---          3                       RIGHT Joystick
---          2                       LEFT Joystick
---          1                       DOWN Joystick
---          0                       UP Joystick
-
   p_input_registers : process
   begin
     wait until rising_edge(clk);
     if (ena_6 = '1') then
         -- on is low
-      in0_reg(7) <= not button_debounced(6); -- credit  Up Pushbutton
-      in0_reg(6) <= '1';                            -- coin2    
-      in0_reg(5) <= not button_debounced(7); -- coin1       DOWN PushButton
-      in0_reg(4) <= '1';                            -- test_l dipswitch (rack advance)
-      in0_reg(3) <= button_debounced(1);        -- p1 down
-      in0_reg(2) <= button_debounced(3);        -- p1 right
-      in0_reg(1) <= button_debounced(2);        -- p1 left
-      in0_reg(0) <= button_debounced(0);        -- p1 up
-
-      in1_reg(7) <= '1';                            -- table 1-upright 0-cocktail
-      in1_reg(6) <= not button_debounced(8); -- start2      RIGHT PushButton
-      in1_reg(5) <= not button_debounced(5); -- start1      LEFT PushButton
-      in1_reg(4) <= button_debounced(13);       -- test and fire    
-      in1_reg(3) <= button_debounced(10);       -- p2 down
-        if HWSEL_PACMANICMINERMAN = true        then        -- jump for pacmmm else 
-            in1_reg(2) <= button_debounced(4);
-        else
-            in1_reg(2) <= button_debounced(12) ;            -- p2 right
-        end if ;
-      in1_reg(1) <= button_debounced(11);   -- p2 left
-      in1_reg(0) <= button_debounced(9);        -- p2 up        
-
-      -- on is low
-      freeze <= '0';
-      dipsw_reg(7) <= '1'; -- character set ?
-      dipsw_reg(6) <= '1'; -- difficulty ?
-      dipsw_reg(5 downto 4) <= "00"; -- bonus pacman at 10K
-      dipsw_reg(3 downto 2) <= "10"; -- pacman (3)
---    dipsw_reg(1 downto 0) <= "01"; -- cost  (1 coin, 1 play)
-      dipsw_reg(1 downto 0) <= "00"; -- cost  (freeplay)
+      dipsw_reg <= button_debounced(7 downto 0);
+      in0_reg <= button_debounced(15 downto 8);
+      in1_reg <= button_debounced(23 downto 16);
     end if;
   end process;
 

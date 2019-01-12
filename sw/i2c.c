@@ -130,6 +130,7 @@ int i2c_tx(int Port, unsigned char d)
    return !bit;
 }
 
+// return 1: ACK, 0: NACK
 int i2c_write_buf(int Port, byte ADR, byte* data, int len)
 {
    int ack;
@@ -182,6 +183,7 @@ int i2c_write_reg_nr(int Port, byte ADR, byte reg_nr)
    return i2c_write_buf(Port, ADR, &reg_nr, 1);
 }
 
+// return 1: ACK, 0: NACK
 int i2c_write_reg(int Port, byte ADR, byte reg_nr, byte value)
 {
    byte data[2] = { reg_nr, value };

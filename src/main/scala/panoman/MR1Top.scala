@@ -84,7 +84,7 @@ class MR1Top(config: MR1Config ) extends Component {
 
     val update_leds = mr1.io.data_req.valid && mr1.io.data_req.wr && (mr1.io.data_req.addr === U"32'h00080000")
 
-    // io.led1 := RegNextWhen(mr1.io.data_req.data(0), update_leds) init(False)
+    io.led1 := RegNextWhen(mr1.io.data_req.data(0), update_leds) init(False)
     io.led2 := RegNextWhen(mr1.io.data_req.data(1), update_leds) init(False)
     io.led3 := RegNextWhen(mr1.io.data_req.data(2), update_leds) init(False)
 
@@ -108,7 +108,7 @@ class MR1Top(config: MR1Config ) extends Component {
     io.vo_sda.write := RegNextWhen(mr1.io.data_req.data(0), write_vo_sda) init(False)
     io.vo_scl.write := RegNextWhen(mr1.io.data_req.data(0), write_vo_scl) init(False)
 
-    val gpio_addr = (mr1.io.data_req.addr === U"32'h00080040")
+    val gpio_addr = (mr1.io.data_req.addr === U"32'h00080020")
     val write_gpio = mr1.io.data_req.valid && mr1.io.data_req.wr && gpio_addr
 
     io.gpio_out := RegNextWhen(mr1.io.data_req.data(0, 18 bits), write_gpio) init(0)
