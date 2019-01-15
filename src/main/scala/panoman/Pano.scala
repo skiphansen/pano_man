@@ -161,16 +161,16 @@ case class Pano() extends Component {
     // PB6  14 - P2 SW2     - audio mute
     // PB5  13 - P2 SW1     - 0 (on): cocktail, 1: upright
     // PB4  12 - P2 up
-    // PB3  11 - P2 trigger
+    // PB3  11 - P2 trigger - 2 player start
     // PB2  10 - P2 down
     // PB1  9  - P2 left
     // PB0  8  - P2 right
     //
     // PA7  7  - P1 LED1
     // PA6  6  - P1 SW2
-    // PA5  5  - P1 SW1     - 2 player start
+    // PA5  5  - P1 SW1     
     // PA4  4  - P1 up
-    // PA3  3  - P1 trigger - Coin
+    // PA3  3  - P1 trigger - 1 player start
     // PA2  2  - P1 down
     // PA1  1  - P1 left
     // PA0  0  - P1 right
@@ -179,10 +179,10 @@ case class Pano() extends Component {
     // I2C port expander is present, use it
 
         pacman.io.I_JOYSTICK_A := 
-            (7 -> True,                         // credit
-             6 -> True,                         // coin2
-             5 -> gpio_out(3),   // coin1
-             4 -> True,                         // rack test
+            (7 -> True,          // credit
+             6 -> True,          // coin2
+             5 -> ~io.pano_button,   // coin1
+             4 -> True,          // rack test
              3 -> gpio_out(2),   // p1 down
              2 -> gpio_out(0),   // p1 right
              1 -> gpio_out(1),   // p1 left
@@ -190,9 +190,9 @@ case class Pano() extends Component {
 
         pacman.io.I_JOYSTICK_B :=       
             (7 -> gpio_out(13),  // upright/cocktail table select
-             6 -> gpio_out(5),   // start2
-             5 -> ~io.pano_button,              // start1
-             4 -> True,                         // test and fire
+             6 -> gpio_out(11),  // start2
+             5 -> gpio_out(3),   // start1
+             4 -> True,          // test and fire
              3 -> gpio_out(10),  // p2 down
              2 -> gpio_out(8),   // p2 right
              1 -> gpio_out(9),   // p2 left
