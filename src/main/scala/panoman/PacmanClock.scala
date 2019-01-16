@@ -25,3 +25,14 @@ val io = new Bundle {
   noIoPrefix() 
 }
 
+class Usb_clk() extends BlackBox {
+val io = new Bundle {
+    val CLKIN_IN = in  Bool 
+    val CLKFX_OUT = out Bool 
+    var CLK0_OUT = out Bool
+  }
+
+  // Remove io_ prefix 
+  noIoPrefix() 
+}
+

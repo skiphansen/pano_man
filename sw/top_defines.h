@@ -1,10 +1,10 @@
 #define SCL_OFFSET         0
 #define SDA_OFFSET         0x4
 
-#define LED_CONFIG_ADR     0x00000000
-#define CODEC_I2C_ADR      0x00000010
-#define VGA_I2C_ADR        0x00000018
-#define GPIO_ADR           0x00000020
+#define LED_CONFIG_ADR     0x40000000
+#define CODEC_I2C_ADR      0x40000010
+#define VGA_I2C_ADR        0x40000018
+#define GPIO_ADR           0x40000020
 
 // Bits in GPIO register:
 #define I2C_AUDIO_ENABLE   0x04000  // bit 14 -> audio enable

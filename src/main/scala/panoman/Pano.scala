@@ -5,7 +5,7 @@ import spinal.lib.Counter
 import spinal.lib.CounterFreeRun
 import spinal.lib.GrayCounter
 import spinal.lib.master
-import spinal.lib.io.ReadableOpenDrain
+import spinal.lib.io.{ReadableOpenDrain, TriStateArray, TriState}
 
 
 case class Pano() extends Component {
@@ -34,6 +34,16 @@ case class Pano() extends Component {
         var audio_daclrc = out(Bool)
         var audio_adcdat = in(Bool)
         var audio_adclrc = out(Bool)
+
+        var usb_reset_n = out(Bool)
+        var usb_clkin = out(Bool)
+
+        val usb_a = out(UInt(17 bits))
+        val usb_d = master(TriStateArray(16 bits))
+        val usb_cs_ = out(Bool)
+        val usb_rd_ = out(Bool)
+        val usb_wr_ = out(Bool)
+	val usb_irq = in(Bool)
     }
     noIoPrefix()
 
@@ -54,7 +64,6 @@ case class Pano() extends Component {
 
     val pacman_clk1 = new Pacman_clk1()
     pacman_clk1.io.CLKIN_IN <> pacman_clk.io.CLKFX_OUT
-
 
     //============================================================
     // Create pacman clock domain
@@ -90,6 +99,18 @@ case class Pano() extends Component {
         io.vo_sda <> u_pano_core.io.vo_sda
         io.led_red := u_pano_core.io.led1
         gpio_out := u_pano_core.io.gpio_out
+
+    //  USB controller
+        val usb_clk = new Usb_clk()
+        pacman_clk.io.CLK0_OUT <> usb_clk.io.CLKIN_IN
+        usb_clk.io.CLKFX_OUT <> io.usb_clkin
+        io.usb_reset_n := reset_
+        io.usb_a <> u_pano_core.io.usb_a
+        io.usb_d <> u_pano_core.io.usb_d
+        io.usb_cs_ <> u_pano_core.io.usb_cs_
+        io.usb_rd_ <> u_pano_core.io.usb_rd_
+        io.usb_wr_ <> u_pano_core.io.usb_wr_
+	io.usb_irq <> u_pano_core.io.usb_irq
     }
 
     var audio = new audio()
@@ -116,11 +137,12 @@ case class Pano() extends Component {
         audio.io.audio_sample := 0
     }
 
+
     // pacman.io.I_JOYSTICK_A bits:
     //      7 - credit
     //      6 - coin2    
     //      5 - coin1
-    //      4 - test_l dipswitch (rack advance)
+    //      4 - rack advance 0: next "rack" immediate, 1: wait for start button 
     //      3 - p1 down
     //      2 - p1 right
     //      1 - p1 left
@@ -225,7 +247,7 @@ case class Pano() extends Component {
                 (7 -> True,             // credit
                  6 -> True,             // coin2
                  5 -> True,             // coin1
-                 4 -> True,             // rack test
+                 4 -> True,             // rack advance
                  3 -> io.vo_sda.read,   // p1 down
                  2 -> io.led_green,     // p1 right
                  1 -> io.led_blue,      // p1 left
