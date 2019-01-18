@@ -6,6 +6,7 @@
 #include "audio.h"
 #include "mcp23017.h"
 #include "i2c.h"
+#include "g1_usb.h"
 #include "global.h"
 
 int mcp23017_init(void);
@@ -41,8 +42,8 @@ int main()
 {
    byte Data = 0xff;
    int Bits = I2C_INIT_COMPLETE | I2C_AUDIO_ENABLE;
+   byte Toggle = 0;
 
-   REG_WR(LED_CONFIG_ADR,1);
    audio_init();
 
    do {
@@ -62,7 +63,17 @@ int main()
    } while(0);
 
    REG_WR(GPIO_ADR,Bits);
-   while(1);
+   while(1) {
+      Toggle = Toggle ? 0 : 1;
+      REG_WR(LED_CONFIG_ADR,Toggle);
+      if(UsbProbe()) {
+         Toggle = Toggle ? 0 : 1;
+         REG_WR(LED_CONFIG_ADR,Toggle);
+      }
+      else {
+         REG_WR(LED_CONFIG_ADR,1);
+      }
+   }
 }
 
 

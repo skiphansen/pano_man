@@ -69,7 +69,6 @@ unsigned char i2c_rx(int Port, char ack)
 {
    char x, d=0;
 
-   REG_WR(LED_CONFIG_ADR,1);
    i2c_set_sda(Port, 1);
 
    for(x=0; x<8; x++) {

@@ -9,12 +9,12 @@ import spinal.lib.io.{ReadableOpenDrain, TriStateArray, TriState}
 import panoman._
 
 // Memory map
-// A[0:31]     A31 A30 A15		
-// 0x00000000 	0   0	0  On chip program RAM 
-// 0x00008000 	0   0	1  On chip video text buffer RAM 
-// 0x40000000   0   1	x  FPGA registers
-// 0x80000000 	1   0	x  USB chip
-// 0xc0000000 	1   1	x  SDRAM
+// A[0:31]     A31 A30 A15              
+// 0x00000000   0   0   0  On chip program RAM 
+// 0x00008000   0   0   1  On chip video text buffer RAM 
+// 0x40000000   0   1   x  FPGA registers
+// 0x80000000   1   0   x  USB chip
+// 0xc0000000   1   1   x  SDRAM
 class MR1Top(config: MR1Config ) extends Component {
 
     val io = new Bundle {
@@ -51,8 +51,8 @@ class MR1Top(config: MR1Config ) extends Component {
 
     val on_fpga_ram     = ~mr1.io.data_req.addr(31) && ~mr1.io.data_req.addr(30)
     val fpga_register   = ~mr1.io.data_req.addr(31) && mr1.io.data_req.addr(30)
-    val usb_addr	= mr1.io.data_req.addr(31) && ~mr1.io.data_req.addr(30)
-    val sdram_addr	= mr1.io.data_req.addr(31) && mr1.io.data_req.addr(30)
+    val is_usb_addr     = mr1.io.data_req.addr(31) && ~mr1.io.data_req.addr(30)
+    val is_sdram_addr   = mr1.io.data_req.addr(31) && mr1.io.data_req.addr(30)
 
     val cpu_ram_rd_data = Bits(32 bits)
     val reg_rd_data     = Bits(32 bits)
@@ -101,7 +101,7 @@ class MR1Top(config: MR1Config ) extends Component {
         mr1.io.data_rsp.data     := cpu_ram.io.q_b
     }
 
-    val update_leds = mr1.io.data_req.valid && mr1.io.data_req.wr && (mr1.io.data_req.addr === U"32'h00080000")
+    val update_leds = mr1.io.data_req.valid && mr1.io.data_req.wr && (mr1.io.data_req.addr === U"32'h40000000")
 
     io.led1 := RegNextWhen(mr1.io.data_req.data(0), update_leds) init(False)
     io.led2 := RegNextWhen(mr1.io.data_req.data(1), update_leds) init(False)
@@ -134,11 +134,11 @@ class MR1Top(config: MR1Config ) extends Component {
     io.gpio_out := RegNextWhen(mr1.io.data_req.data(0, 18 bits), write_gpio) init(0)
 
 // USB interface 
-    io.usb_cs_ := ~usb_addr
-    io.usb_rd_ := (~io.usb_cs_ && ~mr1.io.data_req.wr) 
+    io.usb_cs_ := ~(is_usb_addr && mr1.io.data_req.valid)
+    io.usb_rd_ := ~(~io.usb_cs_ && mr1.io.data_req.valid && ~mr1.io.data_req.wr) 
     io.usb_wr_ := ~(~io.usb_cs_ && mr1.io.data_req.valid && mr1.io.data_req.wr)
-    io.usb_a := mr1.io.data_req.addr(18 downto 2)
-    io.usb_d.writeEnable := (usb_addr && mr1.io.data_req.wr) ? B(1, 16 bits) | B(0, 16 bits)
+    io.usb_a := mr1.io.data_req.addr(17 downto 1)
+    io.usb_d.writeEnable := (is_usb_addr && mr1.io.data_req.wr) ? B(U"16'hffff", 16 bits) | B(0, 16 bits)
     io.usb_d.write := mr1.io.data_req.data(15 downto 0)
 
     reg_rd_data :=   (RegNext(codec_sda_addr) ? (B(0, 31 bits) ## io.codec_sda.read) |
@@ -146,7 +146,7 @@ class MR1Top(config: MR1Config ) extends Component {
                      (RegNext(vo_sda_addr)    ? (B(0, 31 bits) ## io.vo_sda.read) |
                      (RegNext(vo_scl_addr)    ? (B(0, 31 bits) ## io.vo_scl.read) |
                      (RegNext(gpio_addr)      ? (B(0, 14 bits) ## io.gpio_out) |
-                     (RegNext(usb_addr)       ? (B(0, 16 bits) ## io.usb_d.read) |
+                     (RegNext(is_usb_addr)    ? (B(0, 16 bits) ## io.usb_d.read) |
                       B(0, 32 bits)))))))
 
 }

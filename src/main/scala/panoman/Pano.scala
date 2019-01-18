@@ -43,9 +43,10 @@ case class Pano() extends Component {
         val usb_cs_ = out(Bool)
         val usb_rd_ = out(Bool)
         val usb_wr_ = out(Bool)
-	val usb_irq = in(Bool)
+        val usb_irq = in(Bool)
     }
     noIoPrefix()
+
 
     val gpio_out = Bits(18 bits)
 
@@ -77,6 +78,9 @@ case class Pano() extends Component {
     )
 
     val core = new ClockingArea(pacmanClockDomain) {
+            val usb_d_debug = Reg(Bits(16 bits)).addAttribute("KEEP", "TRUE")
+            usb_d_debug := io.usb_d.read
+
     // Create div2 and div4 clocks
         var clk_cntr6 = Reg(UInt(2 bits)) init(0)
         clk_cntr6 := clk_cntr6 + 1
@@ -110,7 +114,7 @@ case class Pano() extends Component {
         io.usb_cs_ <> u_pano_core.io.usb_cs_
         io.usb_rd_ <> u_pano_core.io.usb_rd_
         io.usb_wr_ <> u_pano_core.io.usb_wr_
-	io.usb_irq <> u_pano_core.io.usb_irq
+        io.usb_irq <> u_pano_core.io.usb_irq
     }
 
     var audio = new audio()
