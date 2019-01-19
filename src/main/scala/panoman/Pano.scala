@@ -78,8 +78,6 @@ case class Pano() extends Component {
     )
 
     val core = new ClockingArea(pacmanClockDomain) {
-            val usb_d_debug = Reg(Bits(16 bits)).addAttribute("KEEP", "TRUE")
-            usb_d_debug := io.usb_d.read
 
     // Create div2 and div4 clocks
         var clk_cntr6 = Reg(UInt(2 bits)) init(0)

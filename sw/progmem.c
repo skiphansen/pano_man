@@ -64,8 +64,6 @@ int main()
 
    REG_WR(GPIO_ADR,Bits);
    while(1) {
-      Toggle = Toggle ? 0 : 1;
-      REG_WR(LED_CONFIG_ADR,Toggle);
       if(UsbProbe()) {
          Toggle = Toggle ? 0 : 1;
          REG_WR(LED_CONFIG_ADR,Toggle);

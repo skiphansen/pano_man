@@ -9,12 +9,7 @@ static u32 isp1760_write32(u32 reg,u32 Value);
 
 static u32 isp1760_read32(u32 reg)
 {
-   u32 Ret;
-
-   Ret = REG_RD(USB_1760_ADR + reg);
-   Ret += REG_RD(USB_1760_ADR + reg + 2) << 16;
-
-   return Ret;
+   return REG_RD(USB_1760_ADR + reg) + (REG_RD(USB_1760_ADR + reg + 2) << 16);
 }
 
 static u32 isp1760_write32(u32 reg,u32 Value)
@@ -30,16 +25,18 @@ int UsbProbe(void)
 
    do {
       isp1760_write32(HC_SCRATCH_REG,RW_TEST_VALUE);
-      if(isp1760_read32(HC_CHIP_ID_REG) != DC_CHIPID) {
+      if((isp1760_read32(HC_CHIP_ID_REG) & 0xffff) != 0x1761) {
          break;
       }
       if(isp1760_read32(HC_SCRATCH_REG) != RW_TEST_VALUE) {
          break;
       }
+#if 0
       isp1760_write32(HC_SCRATCH_REG,~RW_TEST_VALUE);
       if(isp1760_read32(HC_SCRATCH_REG) != ~RW_TEST_VALUE) {
          break;
       }
+#endif
       Ret = TRUE;
    } while(FALSE);
 

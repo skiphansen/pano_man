@@ -120,7 +120,6 @@ class MR1Top(config: MR1Config ) extends Component {
     val vo_scl_addr = (mr1.io.data_req.addr === U"32'h40000018")
     val vo_sda_addr = (mr1.io.data_req.addr === U"32'h4000001c")
 
-
     val write_vo_sda = mr1.io.data_req.valid && mr1.io.data_req.wr && vo_sda_addr
     val write_vo_scl = mr1.io.data_req.valid && mr1.io.data_req.wr && vo_scl_addr
 
@@ -134,9 +133,13 @@ class MR1Top(config: MR1Config ) extends Component {
     io.gpio_out := RegNextWhen(mr1.io.data_req.data(0, 18 bits), write_gpio) init(0)
 
 // USB interface 
-    io.usb_cs_ := ~(is_usb_addr && mr1.io.data_req.valid)
-    io.usb_rd_ := ~(~io.usb_cs_ && mr1.io.data_req.valid && ~mr1.io.data_req.wr) 
-    io.usb_wr_ := ~(~io.usb_cs_ && mr1.io.data_req.valid && mr1.io.data_req.wr)
+
+    val usb_wr_cyc = RegInit(False).addAttribute("KEEP", "TRUE")
+    io.usb_cs_ := !(is_usb_addr && mr1.io.data_req.valid)
+    io.usb_wr_ := !(!io.usb_cs_ && mr1.io.data_req.wr)
+    usb_wr_cyc := RegNext(mr1.io.data_req.addr(31) && ~mr1.io.data_req.addr(30) && mr1.io.data_req.valid && (mr1.io.data_req.wr || usb_wr_cyc))
+    io.usb_rd_ := !(!io.usb_cs_ && !mr1.io.data_req.wr && !usb_wr_cyc) 
+
     io.usb_a := mr1.io.data_req.addr(17 downto 1)
     io.usb_d.writeEnable := (is_usb_addr && mr1.io.data_req.wr) ? B(U"16'hffff", 16 bits) | B(0, 16 bits)
     io.usb_d.write := mr1.io.data_req.data(15 downto 0)
