@@ -118,7 +118,7 @@ Another alternative is to use of the MCP23017 "breakout boards" that are availab
 
 We'll use the existing Pano button for the coin detector, we'll use the joystick's fire buttons for one and two player game start buttons.
 
-Finally we'll use on of the inputs as an audio mute for late night/early morning games.
+Finally we'll use one of the inputs as an audio mute for late night/early morning games.
 
 **Connections**
 
@@ -226,5 +226,5 @@ make impact
 
 ## Notes
 
-2. The Pacman ROM for MAME images are typically found in a zip file named *puckmanb.zip*.
-3. This project has been featured on [Hackaday](https://hackaday.com/2019/01/11/pac-man-fever-comes-to-the-pano-logic-fpga) ! 
+1. The Pacman ROM for MAME images are typically found in a zip file named *puckmanb.zip*.
+2. This project has been featured on [Hackaday](https://hackaday.com/2019/01/11/pac-man-fever-comes-to-the-pano-logic-fpga) ! 
