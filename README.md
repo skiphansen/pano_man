@@ -116,6 +116,10 @@ Tom Verbeure is working on a [PCB](https://github.com/tomverbeure/vga_i2c.git) f
 
 Another alternative is to use of the MCP23017 "breakout boards" that are available on Amazon or ebay.  The MCP23017 is also available in a breadboard friendly DIP package.
 
+We'll use the existing Pano button for the coin detector, we'll use the joystick's fire buttons for one and two player game start buttons.
+
+Finally we'll use on of the inputs as an audio mute for late night/early morning games.
+
 **Connections**
 
 | Signal | MCP23017 | Joystick | Pano | Notes |
@@ -144,6 +148,7 @@ Another alternative is to use of the MCP23017 "breakout boards" that are availab
 Note: the second joystick is **only** needed for the cocktail version of the game where two players sit on either end of a table and look down on the screen.  In this configuration the screen rotates between rounds so that it is right side up for the current player. Two player share the same joystick on the upright version of the game.
 
 Here's an example of the breakout board version:
+
 ![](./assets/i2c_expander.png)  
 
 ## Updating ROMs
