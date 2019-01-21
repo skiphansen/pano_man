@@ -66,10 +66,10 @@ int main()
    while(1) {
       if(UsbProbe()) {
          Toggle = Toggle ? 0 : 1;
-         REG_WR(LED_CONFIG_ADR,Toggle);
+//         REG_WR(LED_CONFIG_ADR,Toggle);
       }
       else {
-         REG_WR(LED_CONFIG_ADR,1);
+//         REG_WR(LED_CONFIG_ADR,1);
       }
    }
 }

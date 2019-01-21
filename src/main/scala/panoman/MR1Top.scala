@@ -135,9 +135,13 @@ class MR1Top(config: MR1Config ) extends Component {
 // USB interface 
 
     val usb_wr_cyc = RegInit(False).addAttribute("KEEP", "TRUE")
+    val usb_debug_clk = RegInit(False).addAttribute("KEEP", "TRUE")
+
+    usb_debug_clk := !usb_debug_clk
+
     io.usb_cs_ := !(is_usb_addr && mr1.io.data_req.valid)
     io.usb_wr_ := !(!io.usb_cs_ && mr1.io.data_req.wr)
-    usb_wr_cyc := RegNext(mr1.io.data_req.addr(31) && ~mr1.io.data_req.addr(30) && mr1.io.data_req.valid && (mr1.io.data_req.wr || usb_wr_cyc))
+    usb_wr_cyc := mr1.io.data_req.addr(31) && ~mr1.io.data_req.addr(30) && mr1.io.data_req.valid && (mr1.io.data_req.wr || usb_wr_cyc)
     io.usb_rd_ := !(!io.usb_cs_ && !mr1.io.data_req.wr && !usb_wr_cyc) 
 
     io.usb_a := mr1.io.data_req.addr(17 downto 1)
