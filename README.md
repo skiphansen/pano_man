@@ -1,4 +1,3 @@
-
 # [![](./assets/pano_man.png)](./assets/pano_man_large.png) 
 
 ## PanoMan 
@@ -48,9 +47,8 @@ For legal reasons the Pacman ROM images are **NOT** included in this project, in
 
 In order to run the Pacman you will need to create ROM image files from an actual arcade game or download the images from elsewhere on the Internet.  These are the same files needed by the infamous [Mame project](https://www.mamedev.org/) so they should be relatively easy to locate. 
 
-
 ## Joystick Interface
-Video and sound weren't much of a challenge since Tom Verbeur had already done all of the ground work there.  
+Video and sound weren't much of a challenge since Tom Verbeur had already done all of the ground work there.
 
 The joystick, coin detectors, and start buttons on the other hand presented a bit of a challenge. Normally a Pacman game needs 8 or 12 GPIO inputs:
 
@@ -59,19 +57,18 @@ The joystick, coin detectors, and start buttons on the other hand presented a bi
 1. One input for the 2 player game start button.
 1. Eight inputs for 2 joysticks for the cocktail table version or four inputs for one joystick on the upright version.
 
-The obvious way to connect a Joystick to the Pano is to use one of the USB ports, but that's a problem because there's no code for the USB port yet and it looks like a major undertaking.   
+The obvious way to connect a Joystick to the Pano is to use one of the USB ports, but that's a problem because there's no code for the USB port yet and it looks like a major undertaking. 
 
-Another solution would be to use an I2C port expander, but this would require something to be built along with code to poll it and it would not be easy to house it in the tiny Pano case. *(See Notes at the bottom of this page)*
+Another solution would be to use an I2C port expander.  This requires building an external interface, but does not require any modifications to the Pano. The benefit of an I2C port expander is that it provides more than enough inputs to implement the cocktail version of Pacman with separate joysticks for 2 players. 
 
-The Pano does have some signals that are relatively easy to access that could be considered GPIOs.  Three are used to drive the 3 LEDs, one is used to read the"Pano" button, and 2 are connected to the VGA monitors Display Data Channel (DDC) port.
+The Pano does have some signals that are relatively easy to access that could be considered GPIOs and there are JUST enough for Pacman if we restrict ourself to a single player in the "Free" play mode.  This requires modifications to the Pano to bring out the "GPIO" lines.
+
+#### "GPIO" Joystick Interface
+The Pano has 6 signals that can be considered as "GPIO" ports, three are used to drive the LEDs, one is used to read the"Pano" button, and 2 are connected to the VGA monitors Display Data Channel (DDC) port. 
 
 One surprise was that unlike the green and blue LEDs the red LED is not driven directly by a Xilinx pin so it's can't be used as an input without hardware modifications.  This leaves us with 5 GPIOs and one output port that are easily accessible.
 
-We will eliminate the need for 5 inputs by supporting only the single player mode.
-
-It turns out that there is a "DIP" switch setting that configured the Pacman machine for free plays.  By selecting this mode we eliminate the need for the coins slot inputs.
-
-This leaves us with 5 inputs for a Joystick and a start button.  The start button is easy, we'll just use the existing "Pano" button for it.
+The start button is easy, we'll just use the existing "Pano" button for it.
 
 For the impatient person who isn't concerned about esthetics or physical robustness flying wires are a quick and easy way to hook up the joystick.
 
@@ -108,6 +105,46 @@ Then we can make a Y cable to combine the joystick and VGA cables.  Note: The pi
 
 ![](./assets/JoystickAdapterCable_small.png)
 ![](./assets/cable.png) 
+
+#### I2C Port expander Joystick Interface
+
+The RISC-V code supports an MCP23017 I2C port expander chip connected to the to VGA monitor's Display Data Channel (DDC) port. If a chip is detected then it will be used instead of the "GPIO" interface. 
+
+There are many other I2C port expander chips that could be used but they are not compatible the current code.  The Microchip MCP23017 was chosen for no particular reason.
+
+Tom Verbeure is working on a [PCB](https://github.com/tomverbeure/vga_i2c.git) for an I2C port expander for the Pano.  One huge advantage of Tom's board is that it eliminates the need to build a custom breakout cable.
+
+Another alternative is to use of the MCP23017 "breakout boards" that are available on Amazon or ebay.  The MCP23017 is also available in a breadboard friendly DIP package.
+
+**Connections**
+
+| Signal | MCP23017 | Joystick | Pano | Notes |
+|-|-|-|-|-|
+| P1 right | 21 - PA0 | #1 - 4 |-||
+| P1 left | 22 - PA1 | #1 - 3 |-||
+| P1 down | 23 - PA2 | #1 - 2 |-||
+| P1 trigger | 24 - PA3 | #1 - 6 |-|1 player start|
+| P1 up | 25 - PA4 | #1 - 1 |-||
+| (SW1) | 26 - PA5 | - | - | not used |
+| (SW2) | 27 - PA6 | - | - | not used |
+| (LED1) | 29 - PA7 | - | - | not used |
+| P2 right | 1 - PB0 | #2 - 4 |-||
+| P2 left | 2 - PB1 | #2 - 3 |-||
+| P2 down | 3 - PB2 | #2 - 2 |-||
+| P2 trigger | 4 - PB3 | | 6 |-| 2 player start|
+| P2 up | 5 - PB4 | #2 - 1 |-||
+| Cabinet | 6 - PB5 | - | -| Ground for cocktail version |
+| Mute | 7 - PB6 | - | -| Ground to mute audio |
+| (LED1_2) | 8 - PB7 | - | - | not used |
+| SCL | 12 | - | 15 ||
+| SDA | 13 | - | 12||
+| Ground | 10, 15, 16, 17  | both - 8 | 5 ||
+| +5V | 9, 18 | - | 9 ||
+
+Note: the second joystick is **only** needed for the cocktail version of the game where two players sit on either end of a table and look down on the screen.  In this configuration the screen rotates between rounds so that it is right side up for the current player. Two player share the same joystick on the upright version of the game.
+
+Here's an example of the breakout board version:
+![](./assets/i2c_expander.png)  
 
 ## Updating ROMs
 To update the bitstream with new ROMs:
@@ -176,8 +213,6 @@ make impact
 
 ## Possible Future Projects
 
-* Add support for MCP23017 I2C port expander to provide support for 2 player mode and coin slots
-
 * Add support for saving the high score in SPI flash
 * Port code to the [second generation](https://github.com/tomverbeure/panologic-g2) of the Pano
 * Once basic USB support is available add support for USB Joysticks
@@ -185,6 +220,6 @@ make impact
 * Port other games that ran on the same hardware such as Invaders and Galaxian
 
 ## Notes
-1. Tom Verbeure is  working on a [PCB](https://github.com/tomverbeure/vga_i2c.git) for an I2C port expander for the Pano. I'm working on adding support for Tom's board in the i2c_port_expander branch of this repository.
+
 2. The Pacman ROM for MAME images are typically found in a zip file named *puckmanb.zip*.
 3. This project has been featured on [Hackaday](https://hackaday.com/2019/01/11/pac-man-fever-comes-to-the-pano-logic-fpga) ! 
