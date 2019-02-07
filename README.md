@@ -112,13 +112,21 @@ The RISC-V code supports an MCP23017 I2C port expander chip connected to the to 
 
 There are many other I2C port expander chips that could be used but they are not compatible the current code.  The Microchip MCP23017 was chosen for no particular reason.
 
-Tom Verbeure is working on a [PCB](https://github.com/tomverbeure/vga_i2c.git) for an I2C port expander for the Pano.  One huge advantage of Tom's board is that it eliminates the need to build a custom breakout cable.
+When the port expander is detected the code uses the Pano button for the coin detector and the joystick's fire buttons for the one and two player game start buttons.  
 
-Another alternative is to use of the MCP23017 "breakout boards" that are available on Amazon or ebay.  The MCP23017 is also available in a breadboard friendly DIP package.
+The PB5 GPIO line can be grounded to configure the game for the cocktail table configuation.
 
-We'll use the existing Pano button for the coin detector, we'll use the joystick's fire buttons for one and two player game start buttons.
+Finally the PB6 GPIO line can be grounded to mute the game audio for late night/early morning games.
 
-Finally we'll use one of the inputs as an audio mute for late night/early morning games.
+#### Tom's Joystick Interface
+Tom Verbeure has created a [PCB](https://tomverbeure.github.io/2019/02/05/VGA-I2C-My-First-PCB.html) for an I2C port expander for the Pano.  One huge advantage of Tom's board is that it eliminates the need to build a custom breakout cable.
+
+![](https://tomverbeure.github.io/assets/vga_i2c/Joystick.JPG) 
+
+#### Homebrew I2C Joystick Interface
+
+Another alternative is to use of the MCP23017 "breakout boards" that are available on Amazon or ebay.  The MCP23017 is also available in a breadboard friendly DIP package if that's your thing.
+
 
 **Connections**
 
@@ -218,13 +226,13 @@ make impact
 
 ## Possible Future Projects
 
-* Add support for saving the high score in SPI flash
-* Port code to the [second generation](https://github.com/tomverbeure/panologic-g2) of the Pano
-* Once basic USB support is available add support for USB Joysticks
 
+* Port the code to the [second generation](https://github.com/tomverbeure/panologic-g2) Pano
+* Add support for USB Joysticks
 * Port other games that ran on the same hardware such as Invaders and Galaxian
 
 ## Notes
 
 1. The Pacman ROM for MAME images are typically found in a zip file named *puckmanb.zip*.
 2. This project has been featured on [Hackaday](https://hackaday.com/2019/01/11/pac-man-fever-comes-to-the-pano-logic-fpga) ! 
+3. If you build/use/modify this project I'd enjoy hearing about it.  You can find my email address in the git log.
