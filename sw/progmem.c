@@ -25,8 +25,6 @@ int mcp23017_init()
    int idx = 0;
    int Ret = 0;
 
-   i2c_init(VGA_I2C_ADR);
-
    while(mcp23017_registers[idx][0] != 0xff) {
        byte addr  = mcp23017_registers[idx][0];
        byte value = mcp23017_registers[idx++][1];
@@ -44,30 +42,35 @@ int mcp23017_init()
 int main() 
 {
    int cntr = 0;
-   byte Data = 0xff;
    int Bits = I2C_INIT_COMPLETE | I2C_AUDIO_ENABLE;
 
    REG_WR(LED_CONFIG_ADR,1);
    audio_init();
+   i2c_init(VGA_I2C_ADR);
+   mcp23017_init();
 
-   // Try to initialize the MCP23017.  The default configuration is fine
-    // except we need to enable pullup resistors
-   while(!mcp23017_init())
-      ;
+   do {
+   // Try to initialize the MCP23017.
+      if(!mcp23017_init()) {
+      // Init failed, no MCP23017 is present
+         break;
+      }
 
    // If we get this far then we have a MCP23017, use it 
-   Bits |= I2C_EXPANDER;
-   while(1) {
-      int toggle_bit = (cntr>>8) & 1;
+      Bits |= I2C_EXPANDER;
+      while(1) {
+         int toggle_bit = (cntr>>8) & 1;
 
-      i2c_write_reg(VGA_I2C_ADR, MCP23017_I2C_ADR, REG_OLATA,   toggle_bit <<7);
-      i2c_write_reg(VGA_I2C_ADR, MCP23017_I2C_ADR, REG_OLATB, (~toggle_bit)<<7);
+         i2c_write_reg(VGA_I2C_ADR,MCP23017_I2C_ADR,REG_OLATA,toggle_bit <<7);
+         i2c_write_reg(VGA_I2C_ADR,MCP23017_I2C_ADR,REG_OLATB,(~toggle_bit)<<7);
 
-      i2c_read_regs(VGA_I2C_ADR, MCP23017_I2C_ADR, REG_GPIOA, (byte *)&Bits, 2);
-      REG_WR(GPIO_ADR, Bits);
-      ++cntr;
-   }
+         i2c_read_regs(VGA_I2C_ADR,MCP23017_I2C_ADR,REG_GPIOA,(byte *)&Bits,2);
+         REG_WR(GPIO_ADR,Bits);
+         ++cntr;
+      }
+   } while(0);
+
+   REG_WR(GPIO_ADR,Bits);
+   while(1);
 }
-
-
 
