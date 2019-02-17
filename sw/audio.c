@@ -10,16 +10,16 @@ short int audio_registers[][2] = {
 
     { WM8750_LOUT1_VOL_ADDR,            (0<<8) |    // LO2VU    : Don't update LOUT1 volume yet
                                         (0<<7) |    // LO2ZC    : Change gain on zero cross only
-                                     (0x7f<<0) },   // LOUT2VOL : Volume...
+                                     (0x78<<0) },   // LOUT2VOL : Volume...
 
     { WM8750_ROUT1_VOL_ADDR,            (1<<8) |    // RO2VU    : Update LOUT1 and ROUT1 volume 
                                         (0<<7) |    // RO2ZC    : Change gain on zero cross only
-                                     (0x7f<<0) },   // ROUT2VOL : Volume...
+                                     (0x78<<0) },   // ROUT2VOL : Volume...
 
 
     // Disable digital soft mute, no de-emphasis
     { WM8750_ADC_DAC_CTRL_ADDR,         (0<<3) |    // DACMU: Disable digital soft mute
-                                        (0<<1) },   // DEEMP: No de-emphasis
+                                        (3<<1) },   // DEEMP: 48 Khz sampling rate
 
     // DSP Mode, mode B, LRP=1, Slave (Figure 23), 16 bits
     { WM8750_AUDIO_INTFC_ADDR,          (0<<7) |    // BCLKINV: BCLK not inverted
@@ -36,9 +36,9 @@ short int audio_registers[][2] = {
                                         (0<<0) },   // USB    : 12MHz Normal clock mode 
     // Set left and right channel volume
     { WM8750_LCHAN_VOL_ADDR,            (0<<8) |    // LDVU   : No left DAC volume update
-                                        (0xff) },   // LDACVOL: Set output volume to middle
+                                        (0xff) },   // LDACVOL: Set to 0 db
     { WM8750_RCHAN_VOL_ADDR,            (1<<8) |    // RDVU   : Update left and right DAC volume
-                                        (0xff) },   // RDACVOL: Set output volume to middle
+                                        (0xff) },   // RDACVOL: Set to 0 db
 
     // Bass control
     { WM8750_BASS_CTRL_ADDR,            (0<<7) |    // BB  : Linear bass control
@@ -63,7 +63,7 @@ short int audio_registers[][2] = {
 
     // Invert ROUT for speaker
     { WM8750_ADDITIONAL_CTRL2_ADDR,     (0<<7) |    // OUT3SW  : OUT3 outputs VREF
-                                        (0<<6) |    // HWSWEN  : for now, disable head-phone switch 
+                                        (1<<6) |    // HWSWEN  : for now, disable head-phone switch 
                                         (0<<5) |    // HWSWPOL : head-phone switch polarity (irrelevant when HWSEN=0) 
                                         (1<<4) |    // ROUT2INV: invert ROUT2 when using speaker
                                         (0<<3) |    // TRI     : Don't set tri-state mode
@@ -123,11 +123,11 @@ short int audio_registers[][2] = {
     // LOUT2/ROUT2 configuration for mono
     { WM8750_LOUT2_VOL_ADDR,            (0<<8) |    // LO2VU    : Don't update LOUT2 volume yet
                                         (0<<7) |    // LO2ZC    : Change gain on zero cross only
-                                      (125<<0) },   // LOUT2VOL : Volume...
+                                      (120<<0) },   // LOUT2VOL : Volume...
 
     { WM8750_ROUT2_VOL_ADDR,            (1<<8) |    // RO2VU    : Update LOUT2 and ROUT2 volume 
                                         (0<<7) |    // RO2ZC    : Change gain on zero cross only
-                                      (125<<0) },   // ROUT2VOL : Volume...
+                                      (120<<0) },   // ROUT2VOL : Volume...
 
     // Mono output isn't used
     { WM8750_MONOOUT_VOL_ADDR,          0 },

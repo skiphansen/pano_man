@@ -42,6 +42,51 @@
 -- version 002 added volume multiplier
 -- version 001 initial release
 --
+-- The following is from: https://www.walkofmind.com/programming/pie/wsg3.htm
+-- Namco 3-channel Waveform Sound Generator
+-- 
+-- The sound chip used in Pacman is a 3-channel Waveform Sound Generator 
+-- (WSG) custom-made by Namco. It allows up to three simultaneous voices each 
+-- with independent control over its volume, frequency and waveform. All of 
+-- the chip functions are controlled by the following 4-bit registers: 
+-- 
+--  Register     Description
+--  00h-04h  Voice #1 frequency counter
+--  05h  Voice #1 waveform (only 3 bits used)
+--  06-09h   Voice #2 frequency counter
+--  0Ah  Voice #2 waveform (only 3 bits used)
+--  0Bh-0Eh  Voice #3 frequency counter
+--  0Fh  Voice #3 waveform (only 3 bits used)
+--  10h-14h  Voice #1 frequency
+--  15h  Voice #1 volume
+--  16h-19h  Voice #2 frequency
+--  1Ah  Voice #2 volume
+--  1Bh-1Eh  Voice #3 frequency
+--  1Fh  Voice #3 volume
+-- 
+-- Frequencies and counters are 20-bit values stored with the least 
+-- significant nibble first. Voice #2 and #3 are missing the register for the 
+-- least significant nibble and it is assumed to be always zero. 
+-- 
+-- These registers are usually mapped into the memory space of the CPU. In 
+-- the Pacman hardware the memory locations at 5040h-505Fh map the sound 
+-- registers, so for example writing a value at the address 505Ah sets the 
+-- volume of voice #2. 
+-- 
+-- Sound generation is based on a table that contains 8 different waveforms, 
+-- where each waveform is described by 32 4-bit entries. For versatility and 
+-- reuseability, this data is kept outside of the chip in a 256 byte PROM. 
+-- 
+-- The chip itself is clocked at 96 KHz, which is the main CPU clock (3.072 
+-- MHz) divided by 32. At each cycle the frequency counter for each voice is 
+-- incremented by the voice frequency, then the most significant 5 bits are 
+-- used as an index to retrieve the current wave sample from the waveform 
+-- table. The sample is then multiplied by the voice volume and sent to the 
+-- amplifier for output. Note that a voice is actually muted if its volume or 
+-- frequency is zero. 
+-- 
+-- Copyright (c) 1997-2004 Alessandro Scotti. All rights reserved.
+
 library ieee;
   use ieee.std_logic_1164.all;
   use ieee.std_logic_unsigned.all;
@@ -50,7 +95,7 @@ library ieee;
 library UNISIM;
   use UNISIM.Vcomponents.all;
 
-use work.pkg_pacman.all;
+-- use work.pkg_pacman.all;
 
 entity PACMAN_AUDIO is
   port (
@@ -59,8 +104,8 @@ entity PACMAN_AUDIO is
     I_AB              : in    std_logic_vector(11 downto 0);
     I_DB              : in    std_logic_vector( 7 downto 0);
     --
-    I_WR1_L           : in    std_logic;
-    I_WR0_L           : in    std_logic;
+    I_WR1_L           : in    std_logic;    -- sound voice
+    I_WR0_L           : in    std_logic;    -- sound waveform
     I_SOUND_ON        : in    std_logic;
     --
     O_AUDIO           : out   std_logic_vector(7 downto 0);
@@ -90,6 +135,7 @@ architecture RTL of PACMAN_AUDIO is
   signal audio_vol_out : std_logic_vector(3 downto 0);
   signal audio_wav_out : std_logic_vector(3 downto 0);
   signal audio_mul_out : std_logic_vector(7 downto 0);
+  signal audio_mix     : std_logic_vector(9 downto 0);
 
 begin
   p_sel_com : process(I_HCNT, I_AB, I_DB, accum_reg)
@@ -159,23 +205,40 @@ begin
 
   p_control_rom_comb : process(I_HCNT)
   begin
+    -- rom3m(0) - 1 - update accum_reg from sum
+    -- rom3m(1) - 2 - frq_ram_wen
+    -- rom3m(2) - 4 - update audio_vol_out & audio_wav_out
+    -- rom3m(3) - 8 - clear accum
+
+-- 64 states to update 3 voices
+-- 8 0 1 2 0 0 1 2 0 0 1 2 0 0 1 2 0 0 1 2 0 0 0 4
+-- 8 0 1 2 0 0 1 2 0 0 1 2 0 0 1 2 0 0 0 4
+-- 8 0 1 2 0 0 1 2 0 0 1 2 0 0 1 2 0 0 0 4
+--- clear, 
+--      wait, do nibble, update nibble sum, wait  (0 1 2 0)
+--      wait, do nibble, update nibble sum, wait  (0 1 2 0)
+--      wait, do nibble, update nibble sum, wait  (0 1 2 0)
+--      wait, do nibble, update nibble sum, wait  (0 1 2 0)
+--      wait, wait, update output vol and wave    (0 0 4)
+
+
     rom3m_n <= x"0000"; rom3m_w <= x"0"; -- default assign
     case I_HCNT(3 downto 0) is
-      when x"0" => rom3m_n <= x"0008"; rom3m_w <= x"0";
-      when x"1" => rom3m_n <= x"0000"; rom3m_w <= x"2";
-      when x"2" => rom3m_n <= x"1111"; rom3m_w <= x"0";
+      when x"0" => rom3m_n <= x"0008"; rom3m_w <= x"0"; -- CPU write
+      when x"1" => rom3m_n <= x"0000"; rom3m_w <= x"2"; -- update phase
+      when x"2" => rom3m_n <= x"1111"; rom3m_w <= x"0"; -- frq_ram_wen
       when x"3" => rom3m_n <= x"2222"; rom3m_w <= x"0";
       when x"4" => rom3m_n <= x"0000"; rom3m_w <= x"0";
       when x"5" => rom3m_n <= x"0000"; rom3m_w <= x"2";
-      when x"6" => rom3m_n <= x"1101"; rom3m_w <= x"0";
+      when x"6" => rom3m_n <= x"1101"; rom3m_w <= x"0"; -- frq_ram_wen
       when x"7" => rom3m_n <= x"2242"; rom3m_w <= x"0";
       when x"8" => rom3m_n <= x"0080"; rom3m_w <= x"0";
       when x"9" => rom3m_n <= x"0000"; rom3m_w <= x"2";
-      when x"A" => rom3m_n <= x"1011"; rom3m_w <= x"0";
+      when x"A" => rom3m_n <= x"1011"; rom3m_w <= x"0"; -- frq_ram_wen
       when x"B" => rom3m_n <= x"2422"; rom3m_w <= x"0";
       when x"C" => rom3m_n <= x"0800"; rom3m_w <= x"0";
       when x"D" => rom3m_n <= x"0000"; rom3m_w <= x"2";
-      when x"E" => rom3m_n <= x"0111"; rom3m_w <= x"0";
+      when x"E" => rom3m_n <= x"0111"; rom3m_w <= x"0"; -- frq_ram_wen
       when x"F" => rom3m_n <= x"4222"; rom3m_w <= x"0";
       when others => null;
     end case;
@@ -225,7 +288,7 @@ begin
   audio_rom_1m : entity work.PROM1_DST
     port map(
       CLK         => CLK,
-      ENA         => ENA_6,	 
+      ENA         => ENA_6,  
       ADDR        => rom1m_addr,
       DATA        => rom1m_data
       );
@@ -252,11 +315,27 @@ begin
       R             => audio_mul_out
       );
 
-  p_output_reg : process
+--  p_output_reg : process
+--  begin
+--    wait until rising_edge(CLK);
+--    if (ENA_6 = '1') then
+--      O_AUDIO(7 downto 0) <= audio_mul_out;
+--    end if;
+--  end process;
+
+  p_audio_mix : process
   begin
+    -- 2m used to use async clear
     wait until rising_edge(CLK);
     if (ENA_6 = '1') then
-      O_AUDIO(7 downto 0) <= audio_mul_out;
+      if (rom3m(2) = '1') then
+        if (I_HCNT(4 downto 0) = "10111") then
+          O_AUDIO(7 downto 0) <= audio_mix(9 downto 2);
+          audio_mix <= "00" & audio_mul_out;
+        else
+          audio_mix <= audio_mul_out + audio_mix;
+        end if;
+      end if;
     end if;
   end process;
 

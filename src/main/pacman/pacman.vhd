@@ -460,8 +460,21 @@ begin
 
     -- out_l 0x5000 - 0x503F control space
 
-    -- wr0_l 0x5040 - 0x504F sound
-    -- wr1_l 0x5050 - 0x505F sound
+    -- wr0_l 0x5040 - 0x504F sound waveform: low 3 bits select one of 8 waveforms
+    --       0x5045 - Voice 1
+    --       0x504A - Voice 2
+    --       0x504F - Voice 3
+
+    -- wr1_l 0x5050 - 0x505F sound voice
+    --       0x5050 - 0x5054 voice 1 frequency (20 bits in low nibbles)
+    --       0x5055 - Voice 1 volume
+
+    --       0x5056 - 0x5059 voice 2 frequency (16 bits in low nibbles)
+    --       0x505a - Voice 2 volume
+
+    --       0x505b - 0x505e voice 3 frequency (16 bits in low nibbles)
+    --       0x505f - Voice 3 volume
+
     -- wr2_l 0x5060 - 0x506F sprite
 
     --       0x5080 - 0x50BF unused
