@@ -110,7 +110,7 @@ case class Pano() extends Component {
     pacman.io.I_JOYSTICK_B := 31
 
     when(gpio_out(14)) {
-        audio.io.audio_sample := pacman.io.O_AUDIO << 8
+        audio.io.audio_sample := S(pacman.io.O_AUDIO.resize(14) << 2)
     }
     .otherwise{
         audio.io.audio_sample := 0
