@@ -62,7 +62,7 @@ entity PACMAN is
     O_VSYNC               : out   std_logic;
     O_BLANK               : out   std_logic;
     --
-    O_AUDIO               : out   std_logic_vector(7 downto 0);
+    O_AUDIO               : out   std_logic_vector(9 downto 0);
     --
     I_JOYSTICK_A          : in    std_logic_vector(7 downto 0);
     I_JOYSTICK_B          : in    std_logic_vector(7 downto 0);
@@ -460,8 +460,8 @@ begin
 
     -- out_l 0x5000 - 0x503F control space
 
-    -- wr0_l 0x5040 - 0x504F sound
-    -- wr1_l 0x5050 - 0x505F sound
+    -- wr0_l 0x5040 - 0x504F sound (frequency)
+    -- wr1_l 0x5050 - 0x505F sound (volume)
     -- wr2_l 0x5060 - 0x506F sprite
 
     --       0x5080 - 0x50BF unused

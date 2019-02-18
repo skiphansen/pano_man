@@ -63,7 +63,7 @@ entity PACMAN_AUDIO is
     I_WR0_L           : in    std_logic;
     I_SOUND_ON        : in    std_logic;
     --
-    O_AUDIO           : out   std_logic_vector(7 downto 0);
+    O_AUDIO           : out   std_logic_vector(9 downto 0);
     ENA_6             : in    std_logic;
     CLK               : in    std_logic
     );
@@ -90,19 +90,26 @@ architecture RTL of PACMAN_AUDIO is
   signal audio_vol_out : std_logic_vector(3 downto 0);
   signal audio_wav_out : std_logic_vector(3 downto 0);
   signal audio_mul_out : std_logic_vector(7 downto 0);
+  signal audio_sum_out : std_logic_vector(9 downto 0);
 
 begin
+
+  -- 3L 74LS157 mux: 2H=0 use AB[3:0] else {32H...4H}
+  -- 3K 74LS158 mux inverting: 2H=0 use DB[3:0] else accum_reg
   p_sel_com : process(I_HCNT, I_AB, I_DB, accum_reg)
   begin
     if (I_HCNT(1) = '0') then -- 2h,
       addr <= I_AB(3 downto 0);
-      data <= I_DB(3 downto 0); -- removed invert
+      data <= I_DB(3 downto 0); -- removed invert JR: compensate for 16x4 RAMs being inverted on output
     else
       addr <= I_HCNT(5 downto 2);
       data <= accum_reg(4 downto 1);
     end if;
   end process;
 
+  -- write enable for 2L vol_ram: write on clk_6MHz and WR1_L=0
+  -- write enable for 2K freq_ram: write on clk_6MHz and rom3m=1? shouldn't this be active low?!?
+  
   p_ram_comb : process(I_WR1_L, rom3m, ENA_6)
   begin
     vol_ram_wen <= '0';
@@ -115,6 +122,9 @@ begin
       frq_ram_wen <= '1';
     end if;
   end process;
+
+  -- 2L 82S25 16x4 RAM inverting:  WE
+  -- 2K 82S25 16x4 RAM inverting: 
 
   -- Xilinx RAMs, but look in pacman_video.vhd for an example of RTL code
   vol_ram : for i in 0 to 3 generate
@@ -157,6 +167,12 @@ begin
         );
   end generate;
 
+
+  -- 3M 256x4 PROM from Schematic
+  -- during wr0_l=0: write strobe on !H2 && H1 (during mux in of A/D bus)
+  -- during wr0_l=1: clr,idle on !H2, followed by 5x (4x for voice 2 & 3) clk_dff, write strobe combo on H2, final clk out_dff at end
+  
+  
   p_control_rom_comb : process(I_HCNT)
   begin
     rom3m_n <= x"0000"; rom3m_w <= x"0"; -- default assign
@@ -256,7 +272,12 @@ begin
   begin
     wait until rising_edge(CLK);
     if (ENA_6 = '1') then
-      O_AUDIO(7 downto 0) <= audio_mul_out;
+      if    (I_HCNT(5 downto 0) = 32) then audio_sum_out(9 downto 0) <= "00" & audio_mul_out;
+		elsif (I_HCNT(5 downto 0) = 52) then audio_sum_out(9 downto 0) <= audio_sum_out + ("00" & audio_mul_out);
+		elsif (I_HCNT(5 downto 0) = 8)  then audio_sum_out(9 downto 0) <= audio_sum_out + ("00" & audio_mul_out);
+      end if;
+      if    (I_HCNT(5 downto 0) = 10) then O_AUDIO(9 downto 0) <= audio_sum_out;
+      end if;
     end if;
   end process;
 
