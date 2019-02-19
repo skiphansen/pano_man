@@ -22,6 +22,8 @@ This project is a Frankenstein's monster of code from many different places writ
 
 The sound subsystem in the Pano is based on a codec from Wolfson which must be initialized before it can be used.  I had no interest creating hardware to do the initialization so that leaves software.  I had even less interest in trying to patch the Pacman Z80 ROMs so ... just drop in a 32 bits processor, since it was easy (*REALLY EASY* since Tom did all the work so it was already there).
 
+Additionally the RISC-V is used to poll the handle the I2C port expander and it will eventually be used to handle USB as well.
+
 ## HW Requirements
 
 * A Pano Logic G1 (the one with a VGA port)
@@ -31,7 +33,7 @@ The sound subsystem in the Pano is based on a codec from Wolfson which must be i
 If you want to actually be able to play a game you'll also need:
 
 * A switch style joystick.
-* Soldering skills to connect the joystick to the Pano.
+* Soldering skills to connect the joystick to the Pano **-or-** one of Tom's I2C expansion boards.
 
 ## Software Requirements
 
