@@ -62,7 +62,7 @@ entity PACMAN is
     O_VSYNC               : out   std_logic;
     O_BLANK               : out   std_logic;
     --
-    O_AUDIO               : out   std_logic_vector(7 downto 0);
+    O_AUDIO               : out   std_logic_vector(9 downto 0);
     --
     I_JOYSTICK_A          : in    std_logic_vector(7 downto 0);
     I_JOYSTICK_B          : in    std_logic_vector(7 downto 0);
