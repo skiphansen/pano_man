@@ -37,7 +37,7 @@ If you want to actually be able to play a game you'll also need:
 
 ## Software Requirements
 
-The free Webpack version of Xilinx [ISE 14.7](https://www.xilinx.com/support/download/index.html/content/xilinx/en/downloadNav/design-tools/v2012_4---14_7.html) is needed to program the Pano device. This will also allow you regenerate the .bit file from VHDL and Verilog sources.  Do **NOT** download the latest Windows 10 version as it does not support the Spartan 3E family of chips used in the first generation of the Pano device.
+The free Webpack version of Xilinx [ISE 14.7](https://www.xilinx.com/support/download/index.html/content/xilinx/en/downloadNav/vivado-design-tools/archive-ise.html) is needed to program the Pano device. This will also allow you regenerate the .bit file from VHDL and Verilog sources.  Do **NOT** download the latest Windows 10 version as it does not support the Spartan 3E family of chips used in the first generation of the Pano device.
 
 Either Windows or Linux can be used to recreate the .bit file if the ROMs are updated, but Linux is probably necessary to make wider changes to the project.
 
